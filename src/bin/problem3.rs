@@ -15,7 +15,7 @@ fn search_factor(mut base: u64) -> Vec<u64> {
     let lim = (base as f64).sqrt().floor() as u64 + 1;
 
     // 素数の可能性のある集合
-    let mut candidate = (2..lim).map(Some).collect::<Vec<Option<u64>>>();
+    let mut candidate = (2..lim).collect::<Vec<u64>>();
 
     // 最初の素数
     let mut prime = 2;
@@ -36,10 +36,13 @@ fn search_factor(mut base: u64) -> Vec<u64> {
         }
 
         // まだ素数が見つかってない場合、篩にかけて次に大きな素数を割り当てる
-        sieve(prime, &mut candidate);
-        prime = match (*candidate).iter().find(|x| x.is_some()) {
-            Some(p) => p.unwrap(),
-            None => break,
+        candidate = sieve(prime, candidate);
+        prime = match (*candidate).first() {
+            Some(p) => *p,
+            None => {
+                prime_factors.push(base);
+                break;
+            }
         };
     }
 
@@ -49,12 +52,8 @@ fn search_factor(mut base: u64) -> Vec<u64> {
 }
 
 // 篩にかけて引数で割れる数は全て0に置き換える。
-fn sieve(prime: u64, candidate: &mut [Option<u64>]) {
-    for slot in candidate.iter_mut().filter(|x| x.is_some()) {
-        if slot.unwrap() % prime == 0 {
-            *slot = None;
-        }
-    }
+fn sieve(prime: u64, mut candidate: Vec<u64>) -> Vec<u64> {
+    candidate.drain(..).filter(|x| x % prime != 0).collect()
 }
 
 #[cfg(test)]
@@ -63,24 +62,11 @@ mod tests {
 
     #[test]
     fn test_sieve() {
-        let mut candidate = (2..11).map(Some).collect::<Vec<Option<u64>>>();
+        let mut candidate = (2..11).collect::<Vec<u64>>();
 
-        sieve(2, &mut candidate);
+        candidate = sieve(2, candidate);
 
-        assert_eq!(
-            candidate,
-            vec![
-                None,
-                Some(3),
-                None,
-                Some(5),
-                None,
-                Some(7),
-                None,
-                Some(9),
-                None
-            ]
-        )
+        assert_eq!(candidate, vec![3, 5, 7, 9])
     }
 
     #[test]
