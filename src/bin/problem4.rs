@@ -9,6 +9,9 @@
 fn main() {
     let large_palindrome = search_large_palindrome(3);
     println!("{}", large_palindrome);
+
+    println!("{}", gen_palindrome(998, 3));
+    println!("{}", gen_palindrome(997, 3));
 }
 
 fn search_large_palindrome(digit: u32) -> u64 {
@@ -25,6 +28,16 @@ fn search_large_palindrome(digit: u32) -> u64 {
     }
 
     *candidate.iter().max().unwrap()
+}
+
+fn gen_palindrome(n: u64, digit: u32) -> u64 {
+    let mut palindrome = n * 10_u64.pow(digit);
+
+    for d in 0..digit {
+        palindrome += (n / 10_u64.pow(d) % 10) * 10_u64.pow(d)
+    }
+
+    palindrome
 }
 
 fn is_palindrome(target: &str) -> bool {
